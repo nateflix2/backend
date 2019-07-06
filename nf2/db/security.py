@@ -3,7 +3,7 @@ Database security functions
 """
 
 import os
-import time
+from time import time
 import hashlib
 import jwt
 
@@ -14,7 +14,7 @@ def hash_pass(password):
 
 def encode_jwt(username):
     jwt_key = os.environ["NF_SECRET_KEY"]
-    exp_time = int(time.time()) + 2592000
+    exp_time = int(time()) + 2592000
     return jwt.encode({"username": username, "exp": exp_time}, jwt_key).decode()
 
 
