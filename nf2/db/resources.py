@@ -1,24 +1,35 @@
 """
 Database resources
 """
+import re
+from time import time
+from pymongo.collation import Collation
 from .db import db
-from .security import hash_pass
+from .security import hash_pass, encode_jwt
 
 ## Collections
 COL_USER = db.db.get_collection("users")
+
+## Create indexes
+# Case-insensitive username index
+COL_USER.create_index("username", collation=Collation("en", strength=1))
 
 ## Schema definitions
 
 SCHEMA_USER = {
     # unique username
-    "username": None,
+    "username": "",
     # sha256 password hash
-    "password": None,
+    "password": "",
     # admin permission flags
     "admin_perms": [],
     # unix timestamp of last activity
-    "last_active": None,
+    "last_active": 0,
 }
+
+## Constants
+
+IGNORE_CASE = lambda x: re.compile("{}".format(x), re.IGNORECASE)
 
 
 class User:
@@ -26,11 +37,23 @@ class User:
         """
         Init a user by unique username
         """
-        self.document = COL_USER.find_one({"username": username})
+        doc = COL_USER.find_one({"username": username})
 
-        # missing user, this should never happen and with throw an error
-        if not self.document:
+        # missing user, this should never happen and will throw an error
+        if not doc:
             raise RuntimeError("Missing user {} in database.".format(username))
+
+        # self.username is the username exactly as it is in the database
+        # it is safe to query a user by self.username
+        self.username = doc["username"]
+
+    def update_last_active(self):
+        """
+        Update this user's last active
+        """
+        COL_USER.update_one(
+            {"username": self.username}, {"$set": {"last_active": int(time())}}
+        )
 
     @staticmethod
     def register(username, password):
@@ -38,7 +61,8 @@ class User:
         Attempt to register a new user in the database
         Returns the User, or None if the username exists.
         """
-        if COL_USER.find_one({"username": username}):
+        # using RE to ignore case
+        if COL_USER.find_one({"username": IGNORE_CASE(username)}):
             return None
 
         new_user = SCHEMA_USER.copy()
@@ -47,7 +71,10 @@ class User:
 
         COL_USER.insert_one(new_user)
 
-        return User(username)
+        user = User(username)
+        user.update_last_active()
+
+        return user
 
     @staticmethod
     def login(username, password):
@@ -55,4 +82,13 @@ class User:
         Attempt to log in a user with a username and password.
         Returns a JWT or None if the login failed
         """
-        return None
+        user_query = {
+            "username": IGNORE_CASE(username),
+            "password": hash_pass(password),
+        }
+
+        user = COL_USER.find_one(user_query)
+        if not user:
+            return None
+
+        return encode_jwt(user["username"])
