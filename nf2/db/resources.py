@@ -21,15 +21,21 @@ SCHEMA_USER = {
     "username": "",
     # sha256 password hash
     "password": "",
+    # email
+    "email": "",
     # admin permission flags
     "admin_perms": [],
     # unix timestamp of last activity
     "last_active": 0,
+    # require sign-up completion
+    "completed_registration": False,
 }
 
 ## Constants
 
 IGNORE_CASE = lambda x: re.compile("{}".format(x), re.IGNORECASE)
+
+## Resource Classes
 
 
 class User:
@@ -37,7 +43,7 @@ class User:
         """
         Init a user by unique username
         """
-        doc = COL_USER.find_one({"username": username})
+        doc = COL_USER.find_one({"username": IGNORE_CASE(username)})
 
         # missing user, this should never happen and will throw an error
         if not doc:
@@ -46,6 +52,38 @@ class User:
         # self.username is the username exactly as it is in the database
         # it is safe to query a user by self.username
         self.username = doc["username"]
+
+        # add any missing keys to the document, from the schema
+        _validate_schema({"username": doc["username"]}, COL_USER, SCHEMA_USER, doc)
+
+    def get_document(self):
+        """
+        Retreive this user's entire document from the database
+        """
+        return COL_USER.find_one({"username": self.username})
+
+    def set_credentials(self, username=None, password=None, email=None):
+        """
+        Set one or more of this user's credentials
+        """
+        doc = self.get_document()
+        if username:
+            doc["username"] = username
+
+        if password:
+            doc["password"] = password
+
+        if email:
+            doc["email"] = email
+
+        COL_USER.replace_one({"username": self.username}, doc)
+        if username:
+            self.username = username
+
+    def set_completed_registration(self, value):
+        COL_USER.update_one(
+            {"username": self.username}, {"$set": {"completed_registration": value}}
+        )
 
     def update_last_active(self):
         """
@@ -72,7 +110,6 @@ class User:
         COL_USER.insert_one(new_user)
 
         user = User(username)
-        user.update_last_active()
 
         return user
 
@@ -91,4 +128,19 @@ class User:
         if not user:
             return None
 
+        User(user["username"]).update_last_active()
+
         return encode_jwt(user["username"])
+
+
+## Utility Functions
+def _validate_schema(query, collection, schema, document):
+    """
+    Tests document against schema, adding missing keys from schema into document, 
+    then finds a matching document using query in collection and updates it.
+    """
+    for key in schema:
+        if key not in document:
+            document[key] = schema[key]
+
+    collection.replace_one(query, document)
