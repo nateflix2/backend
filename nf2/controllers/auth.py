@@ -6,8 +6,9 @@ from .hooks import require_json_params
 from ..db.resources import User
 
 
-@falcon.before(require_json_params(["username", "password"]))
 class Register:
+    @falcon.before(require_json_params(["username", "password"]))
+    # TODO: check token and admin
     def on_post(self, req, resp):
         # try to register the user, user will be None on fail
         user = User.register(req.media["username"], req.media["password"])
@@ -18,8 +19,8 @@ class Register:
         resp.media = response
 
 
-@falcon.before(require_json_params(["username", "password"]))
 class Login:
+    @falcon.before(require_json_params(["username", "password"]))
     def on_post(self, req, resp):
         jwt = User.login(req.media["username"], req.media["password"])
         response = {"success": False}

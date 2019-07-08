@@ -23,8 +23,8 @@ SCHEMA_USER = {
     "password": "",
     # email
     "email": "",
-    # admin permission flags
-    "admin_perms": [],
+    # has admin permissions?
+    "admin_perms": False,
     # unix timestamp of last activity
     "last_active": 0,
     # require sign-up completion
