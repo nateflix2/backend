@@ -106,7 +106,7 @@ class User:
 
         new_user = SCHEMA_USER.copy()
         new_user["username"] = username
-        new_user["password"] = hash_pass(password)
+        new_user["password"] = password
 
         COL_USER.insert_one(new_user)
 
@@ -122,7 +122,7 @@ class User:
         """
         user_query = {
             "username": IGNORE_CASE(username),
-            "password": hash_pass(password),
+            "password": password,
         }
 
         user = COL_USER.find_one(user_query)
