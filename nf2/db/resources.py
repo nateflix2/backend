@@ -43,11 +43,12 @@ class User:
         """
         Init a user by unique username
         """
+        self.username = None
         doc = COL_USER.find_one({"username": IGNORE_CASE(username)})
 
-        # missing user, this should never happen and will throw an error
+        # missing user
         if not doc:
-            raise RuntimeError("Missing user {} in database.".format(username))
+            return
 
         # self.username is the username exactly as it is in the database
         # it is safe to query a user by self.username

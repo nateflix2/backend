@@ -5,8 +5,11 @@ application
 import falcon
 
 from .routes import add_routes
+from .controllers.middleware import AuthMiddleware
 
-APP_SETTINGS = {}
+APP_SETTINGS = {
+    "middleware": [AuthMiddleware()]
+}
 
 
 def make_app():
