@@ -43,12 +43,19 @@ class User:
         """
         Init a user by unique username
         """
+        # none until a valid user is instantiated
         self.username = None
+
+        # true if a valid user was instantiated
+        self.valid = False
+
         doc = COL_USER.find_one({"username": IGNORE_CASE(username)})
 
         # missing user
         if not doc:
             return
+
+        self.valid = True
 
         # self.username is the username exactly as it is in the database
         # it is safe to query a user by self.username
@@ -61,6 +68,9 @@ class User:
         """
         Retreive this user's entire document from the database
         """
+        if self.username is None or not self.valid:
+            raise RuntimeError("Can't get the document of an invalid user resource.")
+
         return COL_USER.find_one({"username": self.username})
 
     def set_credentials(self, username=None, password=None, email=None):
@@ -120,10 +130,7 @@ class User:
         Attempt to log in a user with a username and password.
         Returns a JWT or None if the login failed
         """
-        user_query = {
-            "username": IGNORE_CASE(username),
-            "password": password,
-        }
+        user_query = {"username": IGNORE_CASE(username), "password": password}
 
         user = COL_USER.find_one(user_query)
         if not user:
