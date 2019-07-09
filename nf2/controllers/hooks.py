@@ -31,3 +31,10 @@ def _require_json_call(req, resp, resource, params, param_list):
     for param in param_list:
         if param not in req.media:
             raise missing_param(param)
+
+def require_admin(req, resp, resource, params):
+    if not req.context.user_has_admin:
+        raise falcon.HTTPForbidden(
+            "403 Forbidden.",
+            "Admin rights are required."
+        )

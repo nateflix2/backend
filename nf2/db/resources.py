@@ -5,7 +5,7 @@ import re
 from time import time
 from pymongo.collation import Collation
 from .db import db
-from .security import hash_pass, encode_jwt
+from .security import encode_jwt
 
 ## Collections
 COL_USER = db.db.get_collection("users")

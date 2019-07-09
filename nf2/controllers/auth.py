@@ -2,13 +2,13 @@
 Auth controllers
 """
 import falcon
-from .hooks import require_json_params
+from .hooks import require_json_params, require_admin
 from ..db.resources import User
 
 
 class Register:
+    @falcon.before(require_admin)
     @falcon.before(require_json_params(["username", "password"]))
-    # TODO: check token and admin
     def on_post(self, req, resp):
         # try to register the user, user will be None on fail
         user = User.register(req.media["username"], req.media["password"])
