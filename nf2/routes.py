@@ -1,11 +1,11 @@
 """
 routes module
 """
-from .controllers.auth import Login, Register
+from .controllers.auth import Login, Register, ResetPassword
 from .controllers.users import CompleteRegistration
 
 # these routes do not require authentication
-AUTH_WHITELIST = ["/auth/login"]
+AUTH_WHITELIST = ["/auth/login", "/auth/resetpassword"]
 
 
 def add_routes(app):
@@ -21,12 +21,21 @@ def add_routes(app):
     login = Login()
     app.add_route("/auth/login", login)
 
+    # POST /auth/resetpassword
+    # json params: email, url
+    # returns: success (bool)
+    #
+    # PATCH /auth/resetpassword
+    # json params: resetToken newPassword
+    # returns: success (bool)
+    reset_pw = ResetPassword()
+    app.add_route("/auth/resetpassword", reset_pw)
+
     # GET /users/{username}/completeregistration
     # returns: completed (bool)
-    complete_reg = CompleteRegistration()
-    app.add_route("/users/{username}/completeregistration", complete_reg)
-
+    #
     # POST /users/{username}/completeregistration
     # json params: email, newpassword
     # returns: success (bool)
+    complete_reg = CompleteRegistration()
     app.add_route("/users/{username}/completeregistration", complete_reg)

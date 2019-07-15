@@ -12,9 +12,9 @@ def hash_pass(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 
-def encode_jwt(username):
+def encode_jwt(username, exp_time=2592000):
     jwt_key = os.environ["NF_SECRET_KEY"]
-    exp_time = int(time()) + 2592000
+    exp_time = int(time()) + exp_time
     return jwt.encode({"username": username, "exp": exp_time}, jwt_key).decode()
 
 

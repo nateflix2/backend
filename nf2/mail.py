@@ -10,7 +10,8 @@ def send_password_reset_email(dest_email, username, reset_link):
     body = (
         "Hi {username},\n\n"
         "You have requested to change your password, please click the following link, or "
-        "copy-paste it into your address bar to change it.\n\n{link}"
+        "copy-paste it into your address bar to change it. The link will work "
+        "for 24 hours.\n\n{link}"
     ).format(username=username, link=reset_link)
 
     return _send_mail(dest_email, subject, body)

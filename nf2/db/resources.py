@@ -33,7 +33,7 @@ SCHEMA_USER = {
 
 ## Constants
 
-IGNORE_CASE = lambda x: re.compile("{}".format(x), re.IGNORECASE)
+IGNORE_CASE = lambda x: re.compile("^{}$".format(x), re.IGNORECASE)
 
 ## Resource Classes
 
@@ -139,6 +139,19 @@ class User:
         User(user["username"]).update_last_active()
 
         return encode_jwt(user["username"])
+
+    @staticmethod
+    def find_by_email(email):
+        """
+        Find a user by email, returns None if no user could be found
+        """
+        query = {"email": IGNORE_CASE(email)}
+
+        user = COL_USER.find_one(query)
+        if not user:
+            return None
+
+        return User(user["username"])
 
 
 ## Utility Functions

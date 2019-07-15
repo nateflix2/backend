@@ -1,9 +1,12 @@
 """
 Auth controllers
 """
+from urllib import parse
 import falcon
 from .hooks import require_json_params, require_admin
 from ..db.resources import User
+from ..db.security import encode_jwt, decode_jwt
+from ..mail import send_password_reset_email
 
 
 class Register:
@@ -29,3 +32,44 @@ class Login:
             response["token"] = jwt
 
         resp.media = response
+
+
+class ResetPassword:
+    @falcon.before(require_json_params(["email", "url"]))
+    def on_post(self, req, resp):
+        """
+        Send a reset link using url to the user's email only
+        if a user is found by email
+        """
+        user = User.find_by_email(req.media["email"])
+        if not user:
+            resp.media = {"success": False}
+            return
+
+        # create a reset token expiring in 24 hours
+        reset_token = encode_jwt(user.username, 86400)
+
+        # format the url
+        url = "{}{}{}".format(
+            req.media["url"], "?", parse.urlencode({"resettoken": reset_token})
+        )
+
+        # send the email
+        send_password_reset_email(req.media["email"], user.username, url)
+
+        resp.media = {"success": True}
+
+    @falcon.before(require_json_params(["resetToken", "newPassword"]))
+    def on_patch(self, req, resp):
+        """
+        Reset password if the token is good
+        """
+        decoded = decode_jwt(req.media["resetToken"])
+        if not decoded:
+            resp.media = {"success": False}
+            return
+
+        user = User(decoded["username"])
+        user.set_credentials(password=req.media["newPassword"])
+
+        resp.media = {"success": True}
