@@ -50,3 +50,16 @@ class AuthMiddleware:
             raise falcon.HTTPForbidden(
                 "403 Forbidden", "An auth token must be provided."
             )
+
+
+class CORSMiddleware:
+    """
+    Middleware to allow CORS
+    """
+
+    def process_request(self, req, resp):
+        resp.set_header("Access-Control-Allow-Origin", "*")
+        resp.set_header(
+            "Access-Control-Allow-Headers",
+            "Origin, X-Requested-With, Content-Type, Accept",
+        )
