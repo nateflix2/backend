@@ -46,7 +46,7 @@ class AuthMiddleware:
                     req.context.user_has_admin = user_doc["admin_perms"]
 
         # if the route is not in the auth whitelist, we need auth
-        if req.path not in AUTH_WHITELIST and not req.context.user_has_auth:
+        if req.path not in AUTH_WHITELIST and not req.context.user_has_auth and not req.method == 'OPTIONS':
             raise falcon.HTTPForbidden(
                 "403 Forbidden", "An auth token must be provided."
             )
