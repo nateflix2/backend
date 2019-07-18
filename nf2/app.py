@@ -8,7 +8,7 @@ from .routes import add_routes
 from .controllers.middleware import AuthMiddleware, CORSMiddleware
 
 APP_SETTINGS = {
-    "middleware": [AuthMiddleware(), CORSMiddleware()]
+    "middleware": [CORSMiddleware(), AuthMiddleware()]
 }
 
 
