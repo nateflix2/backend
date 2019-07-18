@@ -33,6 +33,13 @@ class Login:
 
         resp.media = response
 
+class Check:
+    def on_get(self, req, resp):
+        resp.media = {
+            "username": req.context.username,
+            "userHasAdmin": req.context.user_has_admin
+        }
+
 
 class ResetPassword:
     @falcon.before(require_json_params(["email", "url"]))

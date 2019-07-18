@@ -1,7 +1,7 @@
 """
 routes module
 """
-from .controllers.auth import Login, Register, ResetPassword
+from .controllers.auth import Login, Register, ResetPassword, Check
 from .controllers.users import CompleteRegistration
 
 # these routes do not require authentication
@@ -20,6 +20,11 @@ def add_routes(app):
     # returns: success (bool), token
     login = Login()
     app.add_route("/auth/login", login)
+
+    # GET /auth/check
+    # returns: username, userHasAdmin (bool)
+    check = Check()
+    app.add_route("/auth/check", check)
 
     # POST /auth/resetpassword
     # json params: email, url
