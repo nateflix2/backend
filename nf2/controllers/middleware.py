@@ -61,5 +61,5 @@ class CORSMiddleware:
         resp.set_header("Access-Control-Allow-Origin", "*")
         resp.set_header(
             "Access-Control-Allow-Headers",
-            "Origin, X-Requested-With, Content-Type, Accept",
+            "Origin, X-Requested-With, Content-Type, Accept, Authorization",
         )
