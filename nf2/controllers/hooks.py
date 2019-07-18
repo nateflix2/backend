@@ -22,11 +22,13 @@ def _require_json_call(req, resp, resource, params, param_list):
     if not req.media:
         raise bad_req
 
+    """
     if (
         req.content_type != "application/json"
         and req.content_type != "application/json;charset=utf-8"
     ):
         raise bad_req
+    """
 
     missing_param = lambda x: falcon.HTTPBadRequest(
         "Bad Request", "Missing parameter '{}'".format(x)
