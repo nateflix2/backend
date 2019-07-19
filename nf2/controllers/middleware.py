@@ -63,3 +63,7 @@ class CORSMiddleware:
             "Access-Control-Allow-Headers",
             "Origin, X-Requested-With, Content-Type, Accept, Authorization",
         )
+        resp.set_header(
+            "Access-Control-Allow-Methods",
+            "POST, GET, OPTIONS, PATCH, DELETE"
+        )
