@@ -38,16 +38,19 @@ def require_admin(req, resp, resource, params):
 
 def require_user(req, resp, resource, params):
     """
-    Hook to require a specific user be making the request
-    Additionally, after this hook, the username passed is guaranteed 
-    to be a valid user
+    Hook to require a specific user be making the request,
+    or an admin
     """
     required_user = params["username"]
     passed = False
+
     if req.context.user_has_auth:
         user = User(req.context.username)
         if user.valid and user.username.lower() == required_user.lower():
             passed = True
+
+    if req.context.user_has_admin:
+        passed = True
 
     if not passed:
         raise falcon.HTTPForbidden(

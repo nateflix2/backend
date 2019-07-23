@@ -153,6 +153,19 @@ class User:
 
         return User(user["username"])
 
+    @staticmethod
+    def find_all():
+        """
+        Find all users sorted by most recently active
+        """
+        users = COL_USER.find(limit=10000).sort("last_active", -1)
+        docs = []
+        for doc in users:
+            del doc["_id"]
+            docs.append(doc)
+
+        print(docs)
+        return docs
 
 ## Utility Functions
 def _validate_schema(query, collection, schema, document):
