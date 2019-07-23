@@ -2,7 +2,7 @@
 routes module
 """
 from .controllers.auth import Login, Register, ResetPassword, Check
-from .controllers.users import Users, CompleteRegistration
+from .controllers.users import Users, SingleUser, CompleteRegistration
 
 # these routes do not require authentication
 AUTH_WHITELIST = ["/auth/login", "/auth/resetpassword"]
@@ -40,6 +40,16 @@ def add_routes(app):
     # returns: all users
     users = Users()
     app.add_route("/users", users)
+
+    # GET /users/{username}
+    # returns: user doc
+    #
+    # POST /users/{username}
+    # accepted params: username, password, email, admin_perms
+    # requires admin to set admin_params
+    # returns: success(bool), updatedUser (doc)
+    single_user = SingleUser()
+    app.add_route("/users/{username}", single_user)
 
     # GET /users/{username}/completeregistration
     # returns: completed (bool)

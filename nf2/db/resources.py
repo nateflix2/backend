@@ -71,25 +71,36 @@ class User:
         if self.username is None or not self.valid:
             raise RuntimeError("Can't get the document of an invalid user resource.")
 
-        return COL_USER.find_one({"username": self.username})
+        doc = COL_USER.find_one({"username": self.username})
+
+        # strip _id
+        del doc["_id"]
+        return doc
 
     def set_credentials(self, username=None, password=None, email=None):
         """
         Set one or more of this user's credentials
         """
         doc = self.get_document()
-        if username:
+        if username is not None:
             doc["username"] = username
 
-        if password:
+        if password is not None:
             doc["password"] = password
 
-        if email:
+        if email is not None:
             doc["email"] = email
 
         COL_USER.replace_one({"username": self.username}, doc)
+
+        # update this instance
         if username:
             self.username = username
+
+    def set_admin_perms(self, has_perms):
+        COL_USER.update_one(
+            {"username": self.username}, {"$set": {"admin_perms": has_perms}}
+        )
 
     def set_completed_registration(self, value):
         COL_USER.update_one(
@@ -154,11 +165,11 @@ class User:
         return User(user["username"])
 
     @staticmethod
-    def find_all():
+    def find_all(skip=0, limit=1000):
         """
         Find all users sorted by most recently active
         """
-        users = COL_USER.find(limit=10000).sort("last_active", -1)
+        users = COL_USER.find(skip=skip, limit=limit).sort("last_active", -1)
         docs = []
         for doc in users:
             del doc["_id"]
