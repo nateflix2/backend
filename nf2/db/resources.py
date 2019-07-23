@@ -5,7 +5,7 @@ import re
 from time import time
 from pymongo.collation import Collation
 from .db import db
-from .security import encode_jwt
+from .security import encode_jwt, hash_pass
 
 ## Collections
 COL_USER = db.db.get_collection("users")
@@ -86,7 +86,7 @@ class User:
             doc["username"] = username
 
         if password is not None:
-            doc["password"] = password
+            doc["password"] = hash_pass(password)
 
         if email is not None:
             doc["email"] = email
@@ -127,7 +127,7 @@ class User:
 
         new_user = SCHEMA_USER.copy()
         new_user["username"] = username
-        new_user["password"] = password
+        new_user["password"] = hash_pass(password)
 
         COL_USER.insert_one(new_user)
 
@@ -141,7 +141,7 @@ class User:
         Attempt to log in a user with a username and password.
         Returns a JWT or None if the login failed
         """
-        user_query = {"username": IGNORE_CASE(username), "password": password}
+        user_query = {"username": IGNORE_CASE(username), "password": hash_pass(password)}
 
         user = COL_USER.find_one(user_query)
         if not user:
