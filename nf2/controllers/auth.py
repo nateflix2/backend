@@ -14,8 +14,14 @@ class Register:
     @falcon.before(require_json_params(["username", "password"]))
     def on_post(self, req, resp):
         # try to register the user, user will be None on fail
+        if (not req.media["username"]) or (not req.media["password"]):
+            raise falcon.HTTPBadRequest(
+                "400 Bad Request", "username and password must not be empty."
+            )
+
         user = User.register(req.media["username"], req.media["password"])
         response = {"success": False}
+
         if user:
             response["success"] = True
 
@@ -33,11 +39,12 @@ class Login:
 
         resp.media = response
 
+
 class Check:
     def on_get(self, req, resp):
         resp.media = {
             "username": req.context.username,
-            "userHasAdmin": req.context.user_has_admin
+            "userHasAdmin": req.context.user_has_admin,
         }
 
 
@@ -77,6 +84,11 @@ class ResetPassword:
             return
 
         user = User(decoded["username"])
+        if not req.media["newPassword"]:
+            raise falcon.HTTPBadRequest(
+                "400 Bad Request", "newPassword must not be empty."
+            )
+
         user.set_credentials(password=req.media["newPassword"])
 
         resp.media = {"success": True}

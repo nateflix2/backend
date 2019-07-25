@@ -115,6 +115,19 @@ class User:
             {"username": self.username}, {"$set": {"last_active": int(time())}}
         )
 
+    def delete(self):
+        """
+        Delete this user. This user instance will no longer be valid.
+        Returns true if successful false if failed
+        """
+        result = COL_USER.delete_one({"username": self.username})
+
+        if result.deleted_count == 1:
+            self.valid = False
+            return True
+        else:
+            return False
+
     @staticmethod
     def register(username, password):
         """
@@ -175,7 +188,6 @@ class User:
             del doc["_id"]
             docs.append(doc)
 
-        print(docs)
         return docs
 
 ## Utility Functions

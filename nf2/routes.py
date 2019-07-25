@@ -48,6 +48,9 @@ def add_routes(app):
     # accepted params: username, password, email, admin_perms
     # requires admin to set admin_params
     # returns: success(bool), updatedUser (doc)
+    #
+    # DELETE /users/{username}
+    # returns: success(bool)
     single_user = SingleUser()
     app.add_route("/users/{username}", single_user)
 

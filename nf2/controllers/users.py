@@ -30,9 +30,17 @@ class SingleUser:
 
         if "username" in req.media:
             new_username = req.media["username"]
+            if not new_username:
+                raise falcon.HTTPBadRequest(
+                    "400 Bad Request", "username must not be empty."
+                )
 
         if "password" in req.media:
             new_password = req.media["password"]
+            if not new_password:
+                raise falcon.HTTPBadRequest(
+                    "400 Bad Request", "password must not be empty."
+                )
 
         if "email" in req.media:
             new_email = req.media["email"]
@@ -49,6 +57,16 @@ class SingleUser:
             user.set_admin_perms(req.media["admin_perms"])
 
         resp.media = {"success": True, "updatedUser": user.get_document()}
+
+    @falcon.before(require_user)
+    def on_delete(self, req, resp, username):
+        """
+        Delete a user
+        """
+        user = User(username)
+        success = user.delete()
+
+        resp.media = {"success": success}
 
 
 class Users:
@@ -82,6 +100,11 @@ class CompleteRegistration:
         """
         email = req.media["email"]
         newpassword = req.media["newpassword"]
+
+        if (not email) or (not newpassword):
+            raise falcon.HTTPBadRequest(
+                "400 Bad Request", "email and newpassword must not be empty"
+            )
 
         user = User(username)
 
